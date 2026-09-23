@@ -1,0 +1,176 @@
+# Plataforma completa: docker compose up --build
+#   API Gateway:  http://localhost:8080  (Swagger: /swagger-ui.html)
+#   Kafka UI:     http://localhost:8090
+
+x-service: &service
+  build:
+    context: .
+  restart: unless-stopped
+  environment: &service-env
+    SPRING_PROFILES_ACTIVE: docker
+    JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+    JWT_EXPIRATION: ${JWT_EXPIRATION:-1h}
+  depends_on:
+    postgres:
+      condition: service_healthy
+    kafka:
+      condition: service_healthy
+
+services:
+  # ---------------- Infraestructura ----------------
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD:?AUTH_DB_PASSWORD is required}
+      ORDER_DB_PASSWORD: ${ORDER_DB_PASSWORD:?ORDER_DB_PASSWORD is required}
+      INVENTORY_DB_PASSWORD: ${INVENTORY_DB_PASSWORD:?INVENTORY_DB_PASSWORD is required}
+      PAYMENT_DB_PASSWORD: ${PAYMENT_DB_PASSWORD:?PAYMENT_DB_PASSWORD is required}
+      NOTIFICATION_DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?NOTIFICATION_DB_PASSWORD is required}
+      SHIPPING_DB_PASSWORD: ${SHIPPING_DB_PASSWORD:?SHIPPING_DB_PASSWORD is required}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Kafka en modo KRaft: el propio broker hace de controller, sin Zookeeper
+  kafka:
+    image: apache/kafka:3.9.1
+    restart: unless-stopped
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:${KAFKA_EXTERNAL_PORT:-9094}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      # Los topics los declaran los servicios (particiones y DLT explícitos); nada se crea por accidente
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    ports:
+      - "${KAFKA_EXTERNAL_PORT:-9094}:9094"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    restart: unless-stopped
+    environment:
+      KAFKA_CLUSTERS_0_NAME: event-driven-commerce
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    ports:
+      - "${KAFKA_UI_PORT:-8090}:8080"
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  # ---------------- Servicios ----------------
+  auth-service:
+    <<: *service
+    build:
+      context: .
+      args:
+        SERVICE: auth-service
+    environment:
+      <<: *service-env
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  order-service:
+    <<: *service
+    build:
+      context: .
+      args:
+        SERVICE: order-service
+    environment:
+      <<: *service-env
+      ORDER_DB_PASSWORD: ${ORDER_DB_PASSWORD}
+
+  inventory-service:
+    <<: *service
+    build:
+      context: .
+      args:
+        SERVICE: inventory-service
+    environment:
+      <<: *service-env
+      INVENTORY_DB_PASSWORD: ${INVENTORY_DB_PASSWORD}
+
+  payment-service:
+    <<: *service
+    build:
+      context: .
+      args:
+        SERVICE: payment-service
+    environment:
+      <<: *service-env
+      PAYMENT_DB_PASSWORD: ${PAYMENT_DB_PASSWORD}
+      PAYMENT_APPROVAL_LIMIT: ${PAYMENT_APPROVAL_LIMIT:-1000.00}
+      PAYMENT_TRANSIENT_FAILURE_RATE: ${PAYMENT_TRANSIENT_FAILURE_RATE:-0.0}
+
+  notification-service:
+    <<: *service
+    build:
+      context: .
+      args:
+        SERVICE: notification-service
+    environment:
+      <<: *service-env
+      NOTIFICATION_DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD}
+
+  shipping-service:
+    <<: *service
+    build:
+      context: .
+      args:
+        SERVICE: shipping-service
+    environment:
+      <<: *service-env
+      SHIPPING_DB_PASSWORD: ${SHIPPING_DB_PASSWORD}
+
+  api-gateway:
+    <<: *service
+    build:
+      context: .
+      args:
+        SERVICE: api-gateway
+    environment:
+      <<: *service-env
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      order-service:
+        condition: service_healthy
+      inventory-service:
+        condition: service_healthy
+      payment-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+      shipping-service:
+        condition: service_healthy
+
+volumes:
+  postgres-data:

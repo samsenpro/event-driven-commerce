@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: order-service
+  config:
+    import: classpath:commerce-defaults.yml
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${ORDER_DB_NAME:order_db}
+    username: ${ORDER_DB_USERNAME:order_service}
+    password: ${ORDER_DB_PASSWORD}
+  kafka:
+    consumer:
+      group-id: order-service-group
+
+server:
+  port: ${SERVER_PORT:8081}
+
+commerce:
+  outbox:
+    enabled: true
+  openapi:
+    title: Order Service
+    description: >-
+      Pedidos. Crear un pedido lo guarda como PENDING junto con el evento ORDER_CREATED en el outbox
+      (misma transacción). El resto del proceso (stock, pago, confirmación o cancelación) ocurre de
+      forma asíncrona mediante eventos; consulta el estado con GET /api/v1/orders/{id}.

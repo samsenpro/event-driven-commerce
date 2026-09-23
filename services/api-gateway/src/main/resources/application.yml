@@ -1,0 +1,119 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            connect-timeout: 2000
+            response-timeout: 10s
+          routes:
+            # --- API REST: el gateway solo enruta, no contiene lógica de negocio ---
+            - id: auth
+              uri: ${AUTH_SERVICE_URL:http://localhost:8085}
+              predicates:
+                - Path=/api/v1/auth/**
+            - id: orders
+              uri: ${ORDER_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/api/v1/orders, /api/v1/orders/**
+            - id: products
+              uri: ${INVENTORY_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/v1/products, /api/v1/products/**
+            - id: inventory
+              uri: ${INVENTORY_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/v1/inventory/**
+            - id: payments
+              uri: ${PAYMENT_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/v1/payments/**
+            - id: notifications
+              uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+              predicates:
+                - Path=/api/v1/notifications, /api/v1/notifications/**
+            - id: shipments
+              uri: ${SHIPPING_SERVICE_URL:http://localhost:8086}
+              predicates:
+                - Path=/api/v1/shipments/**
+            # --- Documentación OpenAPI de cada servicio, agregada en el Swagger UI del gateway ---
+            - id: docs-auth
+              uri: ${AUTH_SERVICE_URL:http://localhost:8085}
+              predicates:
+                - Path=/docs/auth/v3/api-docs
+              filters:
+                - SetPath=/v3/api-docs
+            - id: docs-orders
+              uri: ${ORDER_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/docs/orders/v3/api-docs
+              filters:
+                - SetPath=/v3/api-docs
+            - id: docs-inventory
+              uri: ${INVENTORY_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/docs/inventory/v3/api-docs
+              filters:
+                - SetPath=/v3/api-docs
+            - id: docs-payments
+              uri: ${PAYMENT_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/docs/payments/v3/api-docs
+              filters:
+                - SetPath=/v3/api-docs
+            - id: docs-notifications
+              uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+              predicates:
+                - Path=/docs/notifications/v3/api-docs
+              filters:
+                - SetPath=/v3/api-docs
+            - id: docs-shipments
+              uri: ${SHIPPING_SERVICE_URL:http://localhost:8086}
+              predicates:
+                - Path=/docs/shipments/v3/api-docs
+              filters:
+                - SetPath=/v3/api-docs
+
+server:
+  port: ${SERVER_PORT:8080}
+
+gateway:
+  jwt:
+    secret: ${JWT_SECRET}
+    issuer: event-driven-commerce
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  # El gateway no tiene API propia: su Swagger UI muestra las especificaciones de los servicios
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: Auth Service
+        url: /docs/auth/v3/api-docs
+      - name: Order Service
+        url: /docs/orders/v3/api-docs
+      - name: Inventory Service
+        url: /docs/inventory/v3/api-docs
+      - name: Payment Service
+        url: /docs/payments/v3/api-docs
+      - name: Notification Service
+        url: /docs/notifications/v3/api-docs
+      - name: Shipping Service
+        url: /docs/shipments/v3/api-docs
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:-}]"

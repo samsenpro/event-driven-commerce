@@ -1,0 +1,4 @@
+# Ejecución dentro de docker compose (nombres de servicio de la red interna)
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/${AUTH_DB_NAME:auth_db}

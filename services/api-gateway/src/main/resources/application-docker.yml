@@ -1,0 +1,7 @@
+# Dentro de docker compose los servicios se resuelven por su nombre en la red interna
+AUTH_SERVICE_URL: http://auth-service:8080
+ORDER_SERVICE_URL: http://order-service:8080
+INVENTORY_SERVICE_URL: http://inventory-service:8080
+PAYMENT_SERVICE_URL: http://payment-service:8080
+NOTIFICATION_SERVICE_URL: http://notification-service:8080
+SHIPPING_SERVICE_URL: http://shipping-service:8080

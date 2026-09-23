@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: notification-service
+  config:
+    import: classpath:commerce-defaults.yml
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${NOTIFICATION_DB_NAME:notification_db}
+    username: ${NOTIFICATION_DB_USERNAME:notification_service}
+    password: ${NOTIFICATION_DB_PASSWORD}
+  kafka:
+    consumer:
+      group-id: notification-service-group
+
+server:
+  port: ${SERVER_PORT:8084}
+
+commerce:
+  # Solo consume eventos: no publica, así que no necesita el publicador del outbox
+  outbox:
+    enabled: false
+  openapi:
+    title: Notification Service
+    description: Notificaciones enviadas (simuladas) a partir de los eventos de la saga.
