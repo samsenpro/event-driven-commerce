@@ -1,4 +1,4 @@
-package com.example.commerce.order.dto;
+package com.example.commerce.platform.web;
 
 import org.springframework.data.domain.Page;
 

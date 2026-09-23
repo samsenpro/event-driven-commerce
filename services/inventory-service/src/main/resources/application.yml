@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: inventory-service
+  config:
+    import: classpath:commerce-defaults.yml
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${INVENTORY_DB_NAME:inventory_db}
+    username: ${INVENTORY_DB_USERNAME:inventory_service}
+    password: ${INVENTORY_DB_PASSWORD}
+  kafka:
+    consumer:
+      group-id: inventory-service-group
+
+server:
+  port: ${SERVER_PORT:8082}
+
+commerce:
+  outbox:
+    enabled: true
+  openapi:
+    title: Inventory Service
+    description: >-
+      Catálogo de productos y stock. Las reservas no se hacen por REST: el servicio reacciona a
+      orders.created (reserva), orders.confirmed (confirma) y orders.cancelled (libera).

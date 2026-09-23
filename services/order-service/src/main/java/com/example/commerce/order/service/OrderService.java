@@ -5,7 +5,7 @@ import com.example.commerce.events.payload.OrderCreated;
 import com.example.commerce.events.payload.OrderLine;
 import com.example.commerce.order.dto.CreateOrderRequest;
 import com.example.commerce.order.dto.OrderResponse;
-import com.example.commerce.order.dto.PageResponse;
+import com.example.commerce.platform.web.PageResponse;
 import com.example.commerce.order.entity.CancellationReason;
 import com.example.commerce.order.entity.CatalogProduct;
 import com.example.commerce.order.entity.Order;

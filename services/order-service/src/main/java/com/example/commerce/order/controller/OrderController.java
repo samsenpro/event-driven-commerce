@@ -2,9 +2,9 @@ package com.example.commerce.order.controller;
 
 import com.example.commerce.order.dto.CreateOrderRequest;
 import com.example.commerce.order.dto.OrderResponse;
-import com.example.commerce.order.dto.PageResponse;
 import com.example.commerce.order.service.OrderService;
 import com.example.commerce.platform.security.AuthenticatedUser;
+import com.example.commerce.platform.web.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
