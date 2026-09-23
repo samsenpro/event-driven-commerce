@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: auth-service
+  config:
+    import: classpath:commerce-defaults.yml
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${AUTH_DB_NAME:auth_db}
+    username: ${AUTH_DB_USERNAME:auth_service}
+    password: ${AUTH_DB_PASSWORD}
+  # auth-service no participa en la mensajería
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+
+server:
+  port: ${SERVER_PORT:8085}
+
+commerce:
+  admin:
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
+    name: ${ADMIN_NAME:Administrator}
+  openapi:
+    title: Auth Service
+    description: >-
+      Registro e inicio de sesión. El token devuelto se envía como "Authorization: Bearer <token>";
+      el gateway y cada servicio lo validan de forma independiente.

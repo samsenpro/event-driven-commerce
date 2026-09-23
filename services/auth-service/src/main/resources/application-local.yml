@@ -1,0 +1,4 @@
+# Ejecución local (servicio en el IDE, infraestructura con docker compose)
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/${AUTH_DB_NAME:auth_db}
