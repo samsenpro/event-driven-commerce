@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,6 +36,9 @@ import java.util.concurrent.atomic.AtomicLong;
         "spring.kafka.listener.concurrency=1"
 })
 @AutoConfigureMockMvc
+// Un contexto por clase: si dos contextos vivieran a la vez, sus listeners compartirían consumer group
+// y los mensajes de un test podrían procesarse en el contexto de otro (p. ej. uno con un mock).
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class AbstractIntegrationTest {
 
     public static final String JWT_SECRET = "integration-test-secret-key-with-at-least-32-bytes";

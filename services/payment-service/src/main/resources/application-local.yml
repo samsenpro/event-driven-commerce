@@ -1,0 +1,6 @@
+# Ejecución local (servicio en el IDE, infraestructura con docker compose)
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/${PAYMENT_DB_NAME:payment_db}
+  kafka:
+    bootstrap-servers: localhost:9094
