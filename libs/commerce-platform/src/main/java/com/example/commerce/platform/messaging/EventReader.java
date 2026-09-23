@@ -2,6 +2,7 @@ package com.example.commerce.platform.messaging;
 
 import com.example.commerce.events.EventEnvelope;
 import com.example.commerce.events.EventType;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
@@ -55,7 +56,9 @@ public class EventReader {
         JavaType type = objectMapper.getTypeFactory()
                 .constructParametricType(EventEnvelope.class, expected.payloadType());
         try {
-            return objectMapper.readValue(record.value(), type);
+            return objectMapper.readerFor(type)
+                    .without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    .readValue(record.value());
         } catch (IOException | IllegalArgumentException ex) {
             throw new InvalidEventException("Unreadable " + expected + " on " + record.topic(), ex);
         }

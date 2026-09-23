@@ -51,12 +51,17 @@ public class OutboxPublisher {
         this.clock = clock;
     }
 
+    /**
+     * Repite mientras encuentre eventos: al publicar la cabeza de un agregado, su siguiente evento pasa
+     * a ser elegible en la misma ejecución. Termina siempre, porque los eventos publicados o en espera
+     * de reintento (backoff) ya no se seleccionan.
+     */
     @Scheduled(fixedDelayString = "${commerce.outbox.poll-interval:500ms}")
     public void publishPendingEvents() {
         Integer processed;
         do {
             processed = transactionTemplate.execute(status -> publishBatch());
-        } while (processed != null && processed == properties.batchSize());
+        } while (processed != null && processed > 0);
     }
 
     /**
