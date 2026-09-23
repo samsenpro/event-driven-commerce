@@ -150,10 +150,10 @@ public class CommercePlatformAutoConfiguration {
     }
 
     @Bean
-    public IdempotentEventProcessor idempotentEventProcessor(ProcessedEventStore store,
+    public IdempotentEventProcessor idempotentEventProcessor(EventReader eventReader, ProcessedEventStore store,
                                                              TransactionTemplate transactionTemplate, Clock clock,
                                                              @Value("${spring.application.name}") String serviceName) {
-        return new IdempotentEventProcessor(store, transactionTemplate, clock, serviceName);
+        return new IdempotentEventProcessor(eventReader, store, transactionTemplate, clock, serviceName);
     }
 
     /** Solo en los servicios que usan Kafka (auth-service la excluye). */

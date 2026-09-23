@@ -45,9 +45,11 @@ public final class KafkaErrorHandling {
             recoverer.accept(record, ex);
         }, backOff);
         handler.addNotRetryableExceptions(NonRetryableEventException.class, DeserializationException.class);
+        // Se invoca en cada fallo (también en el primero y en los no reintentables, antes de ir al DLT)
         handler.setRetryListeners((record, ex, attempt) -> log.warn(
-                "Retrying event topic={} partition={} offset={} key={} attempt={} cause={}",
-                record.topic(), record.partition(), record.offset(), record.key(), attempt, rootMessage(ex)));
+                "Event processing failed topic={} partition={} offset={} key={} attempt={}/{} cause={}",
+                record.topic(), record.partition(), record.offset(), record.key(), attempt,
+                retry.maxRetries() + 1, rootMessage(ex)));
         return handler;
     }
 

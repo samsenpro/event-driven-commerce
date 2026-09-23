@@ -1,7 +1,10 @@
 package com.example.commerce.platform.idempotency;
 
 import com.example.commerce.events.EventEnvelope;
+import com.example.commerce.events.EventType;
 import com.example.commerce.platform.messaging.EventLogContext;
+import com.example.commerce.platform.messaging.EventReader;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -25,17 +28,29 @@ public class IdempotentEventProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(IdempotentEventProcessor.class);
 
+    private final EventReader eventReader;
     private final ProcessedEventStore store;
     private final TransactionTemplate transactionTemplate;
     private final Clock clock;
     private final String serviceName;
 
-    public IdempotentEventProcessor(ProcessedEventStore store, TransactionTemplate transactionTemplate,
-                                    Clock clock, String serviceName) {
+    public IdempotentEventProcessor(EventReader eventReader, ProcessedEventStore store,
+                                    TransactionTemplate transactionTemplate, Clock clock, String serviceName) {
+        this.eventReader = eventReader;
         this.store = store;
         this.transactionTemplate = transactionTemplate;
         this.clock = clock;
         this.serviceName = serviceName;
+    }
+
+    /**
+     * Lee y valida el mensaje ({@link EventReader}) y lo procesa una sola vez. Un mensaje inválido lanza
+     * {@code InvalidEventException} y va al DLT.
+     */
+    public <T> boolean handle(ConsumerRecord<String, String> record, EventType type, String handlerName,
+                             Consumer<EventEnvelope<T>> handler) {
+        EventEnvelope<T> event = eventReader.read(record, type);
+        return process(handlerName, event, handler);
     }
 
     /**
