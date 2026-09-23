@@ -36,7 +36,7 @@ public class JwtAuthenticationGlobalFilter implements GlobalFilter, Ordered {
     private static final int MIN_SECRET_BYTES = 32;
     private static final List<String> PUBLIC_PATHS = List.of(
             "/api/v1/auth/register", "/api/v1/auth/login",
-            "/swagger-ui.html", "/swagger-ui/**", "/webjars/**", "/docs/**",
+            "/swagger-ui.html", "/swagger-ui/**", "/webjars/**", "/v3/api-docs/**", "/docs/**",
             "/actuator/health", "/actuator/health/**");
 
     private final JwtParser parser;

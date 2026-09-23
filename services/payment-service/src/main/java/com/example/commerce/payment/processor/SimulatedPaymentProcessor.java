@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.Random;
 import java.util.random.RandomGenerator;
 
 /**
@@ -27,7 +28,9 @@ public class SimulatedPaymentProcessor implements PaymentProcessor {
 
     @Autowired
     public SimulatedPaymentProcessor(PaymentSimulatorProperties properties) {
-        this(properties, RandomGenerator.getDefault());
+        // java.util.Random: siempre disponible (RandomGenerator.getDefault() depende del módulo jdk.random,
+        // ausente en algunas imágenes JRE) y seguro entre los hilos consumidores
+        this(properties, new Random());
     }
 
     SimulatedPaymentProcessor(PaymentSimulatorProperties properties, RandomGenerator random) {

@@ -95,8 +95,9 @@ management:
         enabled: true
 
 springdoc:
+  # El gateway no tiene API propia: su Swagger UI muestra las especificaciones de los servicios
   api-docs:
-    enabled: false
+    path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
     urls:
