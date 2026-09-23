@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: shipping-service
+  config:
+    import: classpath:commerce-defaults.yml
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${SHIPPING_DB_NAME:shipping_db}
+    username: ${SHIPPING_DB_USERNAME:shipping_service}
+    password: ${SHIPPING_DB_PASSWORD}
+  kafka:
+    consumer:
+      group-id: shipping-service-group
+
+server:
+  port: ${SERVER_PORT:8086}
+
+commerce:
+  outbox:
+    enabled: true
+  openapi:
+    title: Shipping Service
+    description: Envíos creados al confirmarse un pedido (stock reservado y pago aprobado).

@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: payment-service
+  config:
+    import: classpath:commerce-defaults.yml
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${PAYMENT_DB_NAME:payment_db}
+    username: ${PAYMENT_DB_USERNAME:payment_service}
+    password: ${PAYMENT_DB_PASSWORD}
+  kafka:
+    consumer:
+      group-id: payment-service-group
+
+server:
+  port: ${SERVER_PORT:8083}
+
+commerce:
+  outbox:
+    enabled: true
+  payment:
+    simulator:
+      # Importes por encima del límite se rechazan (p. ej. fondos insuficientes)
+      approval-limit: ${PAYMENT_APPROVAL_LIMIT:1000.00}
+      # Probabilidad (0-1) de un fallo transitorio de la pasarela: demuestra retry y DLT
+      transient-failure-rate: ${PAYMENT_TRANSIENT_FAILURE_RATE:0.0}
+  openapi:
+    title: Payment Service
+    description: >-
+      Pagos simulados. El cobro se dispara con el evento payments.requested (no hay endpoint para
+      cobrar); aquí solo se consulta el resultado.
