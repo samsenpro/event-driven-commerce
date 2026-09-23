@@ -33,7 +33,7 @@
         <module>services/order-service</module>
         <module>services/inventory-service</module>
         <module>services/payment-service</module>
-        <!-- <module>services/notification-service</module> -->
+        <module>services/notification-service</module>
         <!-- <module>services/shipping-service</module> -->
     </modules>
 
