@@ -1,0 +1,7 @@
+# Ejecución local: cada servicio en su puerto por defecto
+AUTH_SERVICE_URL: http://localhost:8085
+ORDER_SERVICE_URL: http://localhost:8081
+INVENTORY_SERVICE_URL: http://localhost:8082
+PAYMENT_SERVICE_URL: http://localhost:8083
+NOTIFICATION_SERVICE_URL: http://localhost:8084
+SHIPPING_SERVICE_URL: http://localhost:8086
