@@ -1,3 +1,5 @@
+**🇪🇸 Español** | [🇬🇧 English](README.en.md)
+
 # Event Driven Commerce
 
 Plataforma de e-commerce distribuida en **microservicios** que se comunican con **Apache Kafka**. Crear un pedido no desencadena una cadena de llamadas REST: el pedido publica un evento y cada servicio reacciona por su cuenta (reserva de stock, cobro, notificación, envío). El resultado se alcanza por **consistencia eventual**, mediante una **saga coreografiada** con compensaciones.
